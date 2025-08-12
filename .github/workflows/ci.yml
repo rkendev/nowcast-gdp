@@ -15,7 +15,8 @@ jobs:
       - name: Unit tests
         run: echo "TODO: pytest -q"
 
-  metrics-gate:
+  metrics_gate:             # job id uses underscore (safe)
+    name: metrics-gate      # check will show as: CI / metrics-gate
     runs-on: ubuntu-latest
     needs: test
     steps:
