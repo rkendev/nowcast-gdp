@@ -1,7 +1,8 @@
 name: CI
 on:
-  pull_request:
   push:
+    branches: [main]     # only runs when you push to main
+  workflow_dispatch:      # gives you a "Run workflow" button / CLI trigger
 
 jobs:
   test:
@@ -16,7 +17,7 @@ jobs:
         run: echo "OK"
 
   metrics_gate:
-    name: metrics-gate
+    name: metrics-gate    # check shows as: CI / metrics-gate
     runs-on: ubuntu-latest
     needs: test
     steps:
