@@ -1,0 +1,14 @@
+name: Add issues to Nowcast MVP
+on:
+  issues:
+    types: [opened, labeled, reopened, transferred]
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/users/rkendev/projects/2
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          labeled: 'priority:P0, priority:P1'     # or: labeled: ["priority:P0","priority:P1"]
+          label-operator: OR
