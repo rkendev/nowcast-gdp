@@ -1,0 +1,20 @@
+name: Task
+description: Standard task with estimate, AC, and DoD
+labels: ["type:infra"]
+body:
+  - type: input
+    id: estimate
+    attributes: { label: Estimate, placeholder: "0.5d | 1d | 2d+" }
+    validations: { required: true }
+  - type: textarea
+    id: tasks
+    attributes: { label: Tasks, description: "Bulleted list of steps" }
+    validations: { required: true }
+  - type: textarea
+    id: ac
+    attributes: { label: Acceptance Criteria, description: "What must be true to accept?" }
+    validations: { required: true }
+  - type: textarea
+    id: dod
+    attributes: { label: Definition of Done, description: "Tests, docs, checks" }
+    validations: { required: true }
