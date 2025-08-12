@@ -1,0 +1,4 @@
+/docs/           @your-org/data-governance
+/src/model/      @your-org/ml-leads
+/api/            @your-org/platform
+/dashboard/      @your-org/fe
