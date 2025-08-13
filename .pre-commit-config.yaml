@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.8  # pin to the latest release tag you prefer
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]  # <-- auto-fix lints
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
