@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nowcast-gdp"
+version = "0.0.1"
+description = "Real-time GDP nowcasting toolkit (MVP scaffold)"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "rkendev" }]
+# Optional but recommended:
+# license = { file = "LICENSE" }
+# dependencies = []  # add runtime deps later
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.urls]
+Repository = "https://github.com/rkendev/nowcast-gdp"
+
+# --- Setuptools: make src/ layout work ---
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# --- Pytest config ---
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
