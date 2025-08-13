@@ -1,21 +1,26 @@
+# .github/workflows/ci.yml
 name: CI
 on:
+  pull_request:
   push:
-    branches: [main]      # only runs when you push to main
-  workflow_dispatch:       # manual "Run workflow" button / CLI trigger
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'            # speed up installs by caching pip wheels
-      - run: python -m pip install -U pip
-      - run: pip install -e ".[dev]"   # install from pyproject with dev extras
-      - run: pytest
+          python-version: '3.12'   # official input
+      - name: Install (editable) + dev extras
+        run: |
+          python -m pip install -U pip
+          pip install -e ".[dev]"
+      - name: Unit tests
+        run: pytest -q
 
   metrics_gate:
     name: metrics-gate
@@ -26,8 +31,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
-      - run: python -m pip install -U pip
-      - run: pip install -e ".[dev]"
       - name: Backtest & metrics gate
-        run: echo "OK"
+        run: echo "OK"  # plug real backtest later
