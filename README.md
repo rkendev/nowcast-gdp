@@ -9,7 +9,7 @@ The repo is intentionally lightweight so you can move fast: a tiny package layou
 
 <!-- You can create a badge in your repo UI: Actions → your workflow → “Create status badge”. -->
 <!-- Example badge (replace OWNER/REPO and branch if desired): -->
-[![CI](https://github.com/rkendev/nowcast-gdp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rkendev/nowcast-gdp/actions/workflows/ci.yml)
+[![CI](https://github.com/rkendev/nowcast-gdp/actions/workflows/ci.yml/badge.svg)](https://github.com/rkendev/nowcast-gdp/actions/workflows/ci.yml)
 
 ## Quick start
 
