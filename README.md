@@ -1,123 +1,73 @@
 # nowcast-gdp
 
-Real-time GDP **nowcasting** toolkit — _MVP scaffold_ focused on fast, clean iteration.
+Real‑time GDP nowcasting toolkit — **MVP scaffold**.
+The repo is intentionally lightweight so you can move fast: a tiny package layout, pytest, Ruff linting/formatting, a Makefile for the common dev tasks, and GitHub Actions CI (tests + lint + a placeholder “metrics-gate”).
 
+## Status
+
+> CI runs on pull requests, and on pushes to `main`. You can also trigger it manually from the **Actions** tab.
+
+<!-- You can create a badge in your repo UI: Actions → your workflow → “Create status badge”. -->
+<!-- Example badge (replace OWNER/REPO and branch if desired): -->
 [![CI](https://github.com/rkendev/nowcast-gdp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rkendev/nowcast-gdp/actions/workflows/ci.yml)
 
----
-
-## What’s here
-
-- **Modern packaging** with `pyproject.toml` (Python **3.12+**; Setuptools backend). The package lives under `src/nowcast_gdp`.
-- **Date utilities (MVP)** in `nowcast_gdp.dates`:
-  - `week_ending(d: date) -> date` — Saturday for the ISO week that contains `d`.
-  - Quarter helpers: `quarter_of(d)`, `quarter_start(d)`, and `quarter_end(d)`.
-- **Tests** with `pytest` (see `tests/`).
-- **Lint & format** with **ruff** (formatter + linter) and **pre-commit** hooks for local hygiene.
-- **CI (GitHub Actions)** with three jobs:
-  - `lint` — ruff format & checks
-  - `test` — pytest
-  - `metrics-gate` — placeholder for backtests / acceptance thresholds
-  - Triggers: PRs and/or pushes to `main`, plus a manual **Run workflow** button.
-
-> Scope is intentionally small right now so you can iterate quickly and add data, models, and metrics next.
-
----
-
-## Quickstart
+## Quick start
 
 ```bash
-# 1) Create and activate a virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+# clone
+git clone https://github.com/rkendev/nowcast-gdp.git
+cd nowcast-gdp
 
-# 2) Install the project (editable) + dev tools
-pip install -U pip
-pip install -e ".[dev]"
+# create venv + install package + dev extras (pytest, ruff, pre-commit)
+make venv install
 
-# 3) (Optional) enable local hooks
-pre-commit install
+# install git hooks (ruff + ruff format, EoF/trailing-space)
+make hooks
+
+# fast feedback
+make fmt          # format with Ruff
+make lint         # lint with Ruff
+make test         # run pytest
 ```
 
-### Makefile helpers
-
-The repo includes a tiny `Makefile` for common tasks:
-
-```makefile
-.PHONY: install hooks fmt lint test check
-
-install:
-	pip install -U pip
-	pip install -e ".[dev]"
-
-hooks:
-	pre-commit install
-
-fmt:
-	ruff format .
-
-lint:
-	ruff check .
-
-test:
-	pytest -q
-
-check: fmt lint test
-```
-
-Common flows:
-
-```bash
-make install   # one-time setup in a fresh venv
-make hooks     # enable pre-commit locally
-make fmt       # format with ruff
-make lint      # static checks with ruff
-make test      # run tests
-make check     # all of the above
-```
-
----
+> Python **3.12+** is expected (see `pyproject.toml`).
 
 ## Project layout
 
 ```
 nowcast-gdp/
-├── .github/workflows/ci.yml
-├── .pre-commit-config.yaml
-├── pyproject.toml
-├── src/
-│   └── nowcast_gdp/
-│       └── dates.py
-└── tests/
-    ├── test_dates.py
-    └── test_quarters.py
+├─ src/nowcast_gdp/        # package code
+│  └─ dates.py             # date helpers (week_end, quarter helpers, …)
+├─ tests/                  # pytest tests (unit + smoke)
+├─ .github/workflows/ci.yml# Actions: lint + tests + metrics-gate
+├─ .pre-commit-config.yaml # hooks: ruff, ruff-format, whitespace/eof
+├─ Makefile                # tiny helper targets (see below)
+└─ pyproject.toml          # build + tool config
 ```
 
----
+## Makefile targets
 
-## Usage (snippet)
-
-```python
-from datetime import date
-from nowcast_gdp.dates import week_ending, quarter_of, quarter_start, quarter_end
-
-assert week_ending(date(2025, 8, 11)).isoformat() == "2025-08-16"
-assert quarter_of(date(2025, 2, 1)) == (2025, 1)         # (year, quarter)
-assert quarter_start(date(2025, 2, 1)).isoformat() == "2025-01-01"
-assert quarter_end(date(2025, 2, 1)).isoformat()   == "2025-03-31"
+```bash
+make venv      # create .venv (python -m venv .venv)
+make install   # editable install + dev extras
+make hooks     # install pre-commit hooks
+make fmt       # ruff format
+make lint      # ruff lint
+make test      # pytest -q
+make clean     # remove build/pytest caches
 ```
 
----
+## Development flow (solo-friendly)
 
-## Roadmap (MVP → v0)
+* Work on **feature branches** (e.g., `feat/*`, `chore/*`), open a PR against `main`.
+* CI runs on the PR (lint + tests + metrics-gate).
+* Merge with **Squash** to keep a clean history. Commit messages follow **Conventional Commits**.
 
-- Flesh out **metrics-gate** in CI (backtest + acceptance thresholds).
-- Ingestion pipelines for public macro data.
-- Baseline nowcast model(s) + evaluation.
-- Docs & examples notebook(s).
+## Notes
 
----
+* To show the live CI badge in this README, open **Actions → your workflow → Create status badge**, then copy the Markdown it provides and replace the badge above.
+* When you add real model/backtest code, wire it into the *metrics-gate* job and assert thresholds there (fail the job on regressions).
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
