@@ -1,30 +1,28 @@
-# Summary
-- What changed and why (1–3 sentences).
-- Link to issue(s): Closes #NNN.
+## Summary
+<!-- 1–3 sentences: what changed and why. Link issues, e.g., Closes #NN. -->
 
-## Scope & Impact
-- [ ] Vertical slice (data → model → metrics → UI/API)
-- [ ] No scope creep; 90-min time-box for new deps respected
+## Changes
+- [ ] Core code
+- [ ] Tests
+- [ ] Docs
+- [ ] CI/CD
 
 ## Tests & Evidence
-- [ ] Unit tests added/updated
-- [ ] Backtest re-run; metrics attached
-- [ ] CI runtime under 40m
-
-<details><summary>Metrics snapshot</summary>
-
-| Model      | RMSE | DA | Notes |
-|------------|------|----|------|
-| Baseline   |      |    |      |
-| ElasticNet |      |    |      |
-
-</details>
+- Unit: <!-- brief -->
+- Integration/Smoke: <!-- brief -->
+- CI runtime: <!-- brief -->
 
 ## Risk & Rollback
-- [ ] Rollback plan documented
-- [ ] Runbook updated (if needed)
+- Risks: <!-- brief -->
+- Rollback: <!-- how to revert safely -->
 
-## Checklists
-- **Security:** no secrets/PII; deps updated
-- **Docs:** README/CHANGELOG updated; ADR added if decision
-- **Reviews:** Code Owners auto-assigned
+## Docs
+- [ ] README updated (if needed)
+- [ ] CHANGELOG updated (if used)
+- [ ] ADR added (if a decision was made)
+
+## Checklist
+- [ ] Code formatted & linted (ruff/black)
+- [ ] Tests added/updated; `pytest -q` green locally
+- [ ] CI green
+- [ ] No secrets/PII committed
