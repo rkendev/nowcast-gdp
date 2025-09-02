@@ -35,3 +35,10 @@ check: fmt lint test ## Format, then lint, then tests
 
 clean: ## Remove caches, builds, and the venv
 	rm -rf .pytest_cache __pycache__ build dist *.egg-info $(VENV)
+
+.PHONY: ingest-gdp ingest-gdp-latest
+ingest-gdp:
+	python -m nowcast_gdp.ingest_alfred --series GDP
+
+ingest-gdp-latest:
+	python -m nowcast_gdp.ingest_alfred --series GDP --latest-only

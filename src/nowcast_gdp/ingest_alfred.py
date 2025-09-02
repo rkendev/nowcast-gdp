@@ -1,56 +1,102 @@
 # src/nowcast_gdp/ingest_alfred.py
 from __future__ import annotations
 
-import argparse
-import json
-from datetime import date, datetime, timedelta
+from argparse import ArgumentParser
+from datetime import date
 from pathlib import Path
 
-import pandas as pd
-
-from .alfred import fetch_observations_for_vintage, list_vintage_dates
-from .io import to_parquet
-
-CACHE_DIR = Path("data/cache/alfred")
-RAW_DIR = Path("data/raw/alfred")
+from .alfred import (
+    fetch_observations_for_vintage,  # returns list[Observation(date,value)]
+    list_vintage_dates,
+)
+from .io import ensure_dir, write_csv, write_index_unique_sorted
 
 
-def _vintage_cache_path(series_id: str) -> Path:
-    return CACHE_DIR / series_id / "vintages.json"
+def data_root(base: Path | None = None) -> Path:
+    """
+    Root directory for ALFRED raw data.
+    - default: data/raw/alfred
+    - used by tests to inject a tmp root
+    """
+    return (base or Path("data") / "raw" / "alfred").resolve()
 
 
-def list_vintages_cached(series_id: str, refresh: bool = False) -> list[date]:
-    p = _vintage_cache_path(series_id)
-    if not refresh and p.exists():
-        if datetime.now() - datetime.fromtimestamp(p.stat().st_mtime) < timedelta(hours=24):
-            return [date.fromisoformat(d) for d in json.loads(p.read_text())]
-    vintages = list_vintage_dates(series_id)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps([d.isoformat() for d in vintages]))
-    return vintages
+def series_dir(series_id: str, base: Path | None = None) -> Path:
+    return ensure_dir(data_root(base) / series_id)
 
 
-def resolve_vintage(series_id: str, spec: str) -> date:
-    if spec == "latest":
-        return list_vintages_cached(series_id)[-1]
-    return date.fromisoformat(spec)
+def vintage_path(series_id: str, vintage: date, base: Path | None = None) -> Path:
+    return series_dir(series_id, base) / f"{vintage.isoformat()}.csv"
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("series_id")
-    ap.add_argument("--vintage", default="latest")
-    ap.add_argument("--refresh", action="store_true", help="refresh cached vintages")
-    args = ap.parse_args()
+def index_path(series_id: str, base: Path | None = None) -> Path:
+    return series_dir(series_id, base) / "index.csv"
 
-    v = resolve_vintage(args.series_id, args.vintage)
-    obs = fetch_observations_for_vintage(args.series_id, v)
-    df = pd.DataFrame([{"date": o.date, "value": o.value, "vintage": v} for o in obs])
 
-    out = RAW_DIR / args.series_id / f"observations_vintage={v}.parquet"
-    path = to_parquet(df, out)
-    print(path)
+def _obs_to_rows(obs) -> list[dict[str, str]]:
+    """
+    Convert a list of Observation objects to rows suitable for CSV writing.
+    Each row is a dict with keys: "date" and "value".
+    Missing values (None) are written as empty strings.
+    """
+    rows: list[dict[str, str]] = []
+    for o in obs:
+        if o.value is None:
+            val_str = ""  # or "NaN" if you prefer
+        else:
+            val_str = f"{o.value:.6f}"
+        rows.append({"date": o.date.isoformat(), "value": val_str})
+    return rows
+
+
+def persist_series_vintage(series_id: str, vintage: date, base: Path | None = None) -> Path:
+    """
+    Fetch observations for a specific vintage and write to CSV.
+    Also updates index.csv to include the vintage.
+    Returns the path written.
+    """
+    path = vintage_path(series_id, vintage, base)
+    if path.exists():
+        # idempotent: do nothing if already present
+        return path
+
+    obs = fetch_observations_for_vintage(series_id, vintage)
+    write_csv(path, _obs_to_rows(obs), header=["date", "value"])
+    write_index_unique_sorted(index_path(series_id, base), [vintage.isoformat()])
+    return path
+
+
+def persist_all_vintages(
+    series_id: str, latest_only: bool = False, base: Path | None = None
+) -> list[Path]:
+    """
+    Persist either the latest vintage or all vintages for a series.
+    Skips vintages that are already present.
+    Returns list of paths written.
+    """
+    vdates = list_vintage_dates(series_id)
+    if latest_only:
+        vdates = [vdates[-1]]
+
+    written: list[Path] = []
+    for v in vdates:
+        p = vintage_path(series_id, v, base)
+        if p.exists():
+            continue
+        persist_series_vintage(series_id, v, base)
+        written.append(p)
+    return written
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = ArgumentParser(description="Persist ALFRED vintages to data/raw/alfred")
+    ap.add_argument("--series", required=True, help="Series ID, e.g., GDP")
+    ap.add_argument("--latest-only", action="store_true", help="Only persist the latest vintage")
+    args = ap.parse_args(argv)
+
+    persist_all_vintages(args.series, latest_only=args.latest_only)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
