@@ -28,10 +28,27 @@ lint: venv ## Lint (no changes)
 fmt: venv ## Format code in-place
 	$(RUFF) format
 
-test: venv ## Run tests
+## Run only super-fast unit tests (no network, no filesystem heavy ops)
+test-unit:
+	$(PYTEST) -q -k "not smoke and not slow"
+
+## Run just IO/index-related tests (guard against regressions in index.csv logic)
+test-io:
+	$(PYTEST) -q -k "io or index"
+
+## Run smoke tests only (e.g., minimal end-to-end; can be skipped on CI without keys)
+test-smoke:
+	$(PYTEST) -q -k "smoke"
+
+## Full suite with summary (useful locally before pushing)
+test-all:
 	$(PYTEST) -q
 
-check: fmt lint test ## Format, then lint, then tests
+## Everything: format, lint, and full tests (pre-flight before PR)
+check:
+	$(RUFF) format
+	$(RUFF) check .
+	$(PYTEST) -q
 
 clean: ## Remove caches, builds, and the venv
 	rm -rf .pytest_cache __pycache__ build dist *.egg-info $(VENV)
@@ -42,3 +59,7 @@ ingest-gdp:
 
 ingest-gdp-latest:
 	python -m nowcast_gdp.ingest_alfred --series GDP --latest-only
+
+.PHONY: ingest-registry
+ingest-registry:
+	python -m nowcast_gdp.ingest_alfred --from-registry --active-only --registry config/series.toml
