@@ -1,39 +1,44 @@
-# src/nowcast_gdp/io.py
-from __future__ import annotations
-
-import csv
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Iterable
 
 
 def ensure_dir(p: Path) -> Path:
-    """Create directory (and parents) if needed and return it."""
     p.mkdir(parents=True, exist_ok=True)
     return p
 
 
-def write_csv(path: Path, rows: Iterable[Mapping[str, Any]], header: Sequence[str]) -> None:
-    """Write rows to CSV with a fixed header, overwriting if exists."""
-    ensure_dir(path.parent)
-    with path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(header))
-        w.writeheader()
-        for r in rows:
-            w.writerow(r)
-
-
-def read_csv_dicts(path: Path) -> list[dict[str, str]]:
-    """Read a small CSV into memory as list of dicts (empty list if not found)."""
+def _read_nonempty_lines(path: Path) -> list[str]:
+    """
+    Read path as plain text lines (no header), stripping empties.
+    Returns [] if the file does not exist.
+    """
     if not path.exists():
         return []
-    with path.open(newline="") as f:
-        r = csv.DictReader(f)
-        return [dict(row) for row in r]
+    return [ln.strip() for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+
+
+def _write_lines(path: Path, lines: list[str]) -> None:
+    """
+    Write plain text lines with a trailing newline when non-empty.
+    """
+    ensure_dir(path.parent)
+    if lines:
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    else:
+        # create/empty the file explicitly
+        path.write_text("", encoding="utf-8")
 
 
 def write_index_unique_sorted(path: Path, values: Iterable[str]) -> None:
-    """Append-or-create index file with single column 'vintage_date', uniq+sorted."""
-    existing = {row["vintage_date"] for row in read_csv_dicts(path)}
-    existing.update(values)
-    rows = [{"vintage_date": v} for v in sorted(existing)]
-    write_csv(path, rows, header=["vintage_date"])
+    """
+    Maintain a newline-delimited index file (no header) of vintage dates.
+    Behavior:
+      - creates the file if missing
+      - merges with any existing lines
+      - removes duplicates
+      - sorts ascending (lexicographic works for YYYY-MM-DD)
+    """
+    existing = set(_read_nonempty_lines(path))
+    incoming = {v for v in values if v}
+    merged = sorted(existing | incoming)
+    _write_lines(path, merged)
