@@ -1,6 +1,15 @@
+# Virtual environment
 .venv/
+
+# Python cache / build artifacts
 __pycache__/
 .pytest_cache/
 dist/
 build/
 *.egg-info/
+
+# Raw / intermediate data (not versioned)
+data/*
+!data/.gitkeep
+data/*
+!data/.gitkeep
