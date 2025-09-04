@@ -31,7 +31,8 @@ where = ["src"]
 addopts = "-q"
 testpaths = ["tests"]
 markers = [
-  "integration: tests that hit external services (may be skipped on CI)"
+    "smoke: minimal end-to-end tests (may need network/API key)",
+    "slow: long-running tests (skip by default in unit runs)",
 ]
 
 [tool.ruff]

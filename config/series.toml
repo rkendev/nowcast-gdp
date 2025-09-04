@@ -1,0 +1,16 @@
+# config/series.toml
+# One section per logical series you want to ingest.
+# NOTE: `fred_id` is the ALFRED/FRED series id. If omitted, it defaults to the section name.
+
+[series.GDP]
+fred_id = "GDP"
+active = true
+latest_only = false
+vintage_start = "2022-01-01"   # <- narrow during development
+
+[series.CPI]
+fred_id       = "CPIAUCSL"
+name          = "CPI: All Urban Consumers, SA"
+frequency     = "monthly"
+latest_only   = true
+active        = false
