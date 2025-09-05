@@ -36,6 +36,10 @@ test-unit:
 test-io:
 	$(PYTEST) -q -k "io or index"
 
+# DataIO tests (latest vintage reader)
+test-dataio:
+	$(PYTEST) -q -k "dataio"
+
 ## Run smoke tests only (e.g., minimal end-to-end; can be skipped on CI without keys)
 test-smoke:
 	$(PYTEST) -q -k "smoke"
