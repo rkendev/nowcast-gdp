@@ -71,3 +71,7 @@ ingest-registry:
 # --- Baselines: BL-0 quick print
 bl0-print:
 	python -m nowcast_gdp.baselines --series $(SERIES) --model bl0 --h $(H) --print
+
+# Baseline: BL-1 drift
+bl1-print:
+	python -m nowcast_gdp.baselines --series $(SERIES) --h $(H) --model bl1 --window $(or $(WINDOW),4) --base data/raw/alfred

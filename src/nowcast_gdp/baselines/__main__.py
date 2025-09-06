@@ -7,37 +7,43 @@ from typing import List
 
 from nowcast_gdp.dataio import read_latest_series
 
-from .bl0 import forecast_last
+from .bl0 import forecast_last as carry_forward_forecast
+from .bl1 import drift_forecast
 
 
 def main(argv: List[str] | None = None) -> int:
-    ap = ArgumentParser(description="Run simple baselines over latest series")
-    ap.add_argument("--series", required=True, help="Series ID, e.g. GDP")
-    ap.add_argument("--model", default="bl0", choices=["bl0"], help="Baseline model")
-    ap.add_argument("--h", type=int, default=1, help="Forecast horizon (steps)")
+    ap = ArgumentParser(description="Run simple baselines on latest ALFRED series")
+    ap.add_argument("--series", required=True, help="Series ID, e.g., GDP")
+    ap.add_argument("--h", type=int, default=3, help="Forecast horizon")
+    ap.add_argument(
+        "--model",
+        choices=["bl0", "bl1"],
+        default="bl0",
+        help="Which baseline to run: bl0=carry-forward, bl1=drift",
+    )
+    ap.add_argument(
+        "--window",
+        type=int,
+        default=4,
+        help="Window of diffs for BL-1 drift (ignored for BL-0)",
+    )
     ap.add_argument(
         "--base",
-        default=str(Path("data") / "raw" / "alfred"),
-        help="Root for raw ALFRED data (default: data/raw/alfred)",
+        type=str,
+        default="data/raw/alfred",
+        help="Base path to ALFRED raw data",
     )
-    ap.add_argument("--print", action="store_true", help="Print forecasts to stdout")
     args = ap.parse_args(argv)
 
-    # load latest vintage series
-    _dates, values = read_latest_series(args.series, base=Path(args.base))
-    if not values:
-        raise SystemExit(f"No values found for series {args.series} under {args.base}")
+    base = Path(args.base)
+    dates, values = read_latest_series(args.series, base)
 
-    # select model
     if args.model == "bl0":
-        yhat = forecast_last(values, h=args.h)
-    else:
-        raise SystemExit(f"Unknown model: {args.model}")
+        fcst = carry_forward_forecast(values, args.h)
+    else:  # bl1
+        fcst = drift_forecast(values, args.h, window=args.window)
 
-    if args.print:
-        for i, val in enumerate(yhat, start=1):
-            print(f"h={i}, forecast={val}")
-
+    print(f"[{args.model}] {args.series} h={args.h} → {fcst}")
     return 0
 
 

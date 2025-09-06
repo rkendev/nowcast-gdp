@@ -13,3 +13,9 @@ data/*
 !data/.gitkeep
 data/*
 !data/.gitkeep
+
+# utilities
+bootstrap_nowcast.sh
+
+# issues info
+issues/*
