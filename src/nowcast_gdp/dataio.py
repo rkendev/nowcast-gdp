@@ -91,3 +91,24 @@ def read_latest_series(series_id: str, base: Path | None = None) -> Tuple[List[d
             # Robust to occasional bad rows
             continue
     return dts, vals
+
+
+# ---------- aliases & niceties ----------
+# alias for discoverability (so your earlier import works)
+read_latest_vintage = latest_vintage
+
+
+def read_latest_series_df(series_id: str, base: Path | None = None):
+    """Return latest series as a pandas DataFrame with Date index."""
+    import pandas as pd
+
+    dts, vals = read_latest_series(series_id, base)
+    return pd.DataFrame({"date": dts, "value": vals}).set_index("date")
+
+
+__all__ = [
+    "latest_vintage",
+    "read_latest_vintage",
+    "read_latest_series",
+    "read_latest_series_df",
+]

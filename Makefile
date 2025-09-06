@@ -67,3 +67,7 @@ ingest-gdp-latest:
 .PHONY: ingest-registry
 ingest-registry:
 	python -m nowcast_gdp.ingest_alfred --from-registry --active-only --registry config/series.toml
+
+# --- Baselines: BL-0 quick print
+bl0-print:
+	python -m nowcast_gdp.baselines --series $(SERIES) --model bl0 --h $(H) --print
